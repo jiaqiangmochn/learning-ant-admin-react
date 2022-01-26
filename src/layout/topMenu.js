@@ -4,7 +4,7 @@ import MenuDnd from "@/components/menu-dnd";
 import MyIcon from "@/components/icon";
 import { withRouter } from "react-router-dom";
 import { filterOpenKey } from "@/store/menu/action";
-import { getCurrentUrl, reduceMenuList } from "@/utils";
+import {  reduceMenuList } from "@/utils";
 import { message, Breadcrumb } from "antd";
 import { getMenus } from "@/common";
 
@@ -19,8 +19,8 @@ function getParent(list, parentKey) {
   return list.find((i) => i.key === parentKey);
 }
 async function getBreadArray(ckey) {
-  let list = await getMenus();
-  list = reduceMenuList(list);
+  let res = await getMenus();
+  let list = reduceMenuList(res.data);
   let arr = [];
   let currentInfo = list.find((i) => i.key === ckey);
   if (!currentInfo) return [];
@@ -60,7 +60,7 @@ function TopMenu({ openedMenu, filterKey, history, childKey }) {
   );
 
   return (
-    <div>
+    <div className="top-menu-wrapper">
       {breadArr.length > 0 && (
         <Breadcrumb className="top-breadcrumb">
           {breadArr.map((i) => (
@@ -74,7 +74,10 @@ function TopMenu({ openedMenu, filterKey, history, childKey }) {
 
       <div className="top-menu">
         <MenuDnd
-          currentKey={getCurrentUrl()}
+          currentKey={
+            history.location.pathname +
+            (history.location.hash || history.location.search)
+          }
           rangeVal={openedMenu}
           onClose={closeTopMenu}
         />

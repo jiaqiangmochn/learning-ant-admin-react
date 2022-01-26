@@ -1,11 +1,12 @@
 import React from "react";
 import { addOpenedMenu, setOpenKey, setSelectKey } from "@/store/menu/action";
 import { connect } from "react-redux";
-import { getCurrentUrl, getMenuParentKey } from "@/utils";
+import { getMenuParentKey } from "@/utils";
 import Error from "@pages/err";
+import { Spin } from "antd";
+
 const mapStateToProps = (state) => ({
   openMenus: state.menu.openedMenu,
-  userInfo: state.user,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -27,17 +28,18 @@ class Intercept extends React.Component {
     this.scrollToTop();
   }
   setInfo = async () => {
-    const { title, pageKey, openMenus, setOpenKeys, setSelectedKeys } =
+    const { title, pageKey, openMenus, history, setOpenKeys, setSelectedKeys } =
       this.props;
     if (!title) {
       return;
     }
     document.title = title;
-    const pagePath = getCurrentUrl();
+    const pagePath =
+      history.location.pathname +
+      (history.location.hash || history.location.search);
     const findInfo = openMenus.find((i) => i.path === pagePath);
     setSelectedKeys([pageKey]);
     let openkey = await getMenuParentKey(pageKey);
-    openkey = openkey ? [openkey] : [];
     setOpenKeys(openkey);
     this.addMenus(findInfo, pageKey, pagePath, title);
   };
@@ -65,6 +67,14 @@ class Intercept extends React.Component {
     }
   };
 
+  fellbackStyle = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 500,
+    fontSize: 24,
+  };
+
   render() {
     const {
       path,
@@ -74,12 +84,14 @@ class Intercept extends React.Component {
       setOpenKeys,
       setSelectedKeys,
       addOpenedMenuFn,
-      type,
+      menuList,
       components: Components,
-      userInfo,
       ...itemProps
     } = this.props;
-    if (userInfo.type && type && !type.includes(userInfo.type)) {
+    const hasPath = !menuList.find(
+      (m) => (m.parentPath || "") + m.path === path
+    );
+    if (hasPath && path !== "/" && path !== "*") {
       return (
         <Error
           {...itemProps}
@@ -89,7 +101,12 @@ class Intercept extends React.Component {
         />
       );
     }
-    return <Components {...itemProps} />;
+    return (
+      <Components
+        {...itemProps}
+        fallback={<Spin style={this.fellbackStyle} tip="页面加载中...." />}
+      />
+    );
   }
 }
 

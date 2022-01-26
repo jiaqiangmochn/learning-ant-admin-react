@@ -4,18 +4,21 @@ import logo from "@/assets/images/logo.svg";
 import MyIcon from "@/components/icon/";
 import { connect } from "react-redux";
 import { clearUser } from "@/store/user/action";
-import { clearSessionUser, setKey, saveToken } from "@/utils";
+import {
+  setKey,
+  saveToken,
+  clearLocalDatas,
+  USER_INFO,
+  TOKEN,
+  MENU,
+} from "@/utils";
 const { Header } = Layout;
 const mapStateToProps = (state) => ({
   userInfo: state.user,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  userOut: (info) => {
-    clearSessionUser();
-    info.isLogin = false;
-    saveToken();
-    setKey(true, "userInfo", info);
+  clearStateUser: () => {
     dispatch(clearUser());
   },
 });
@@ -34,17 +37,28 @@ const RightMenu = ({ logout }) => (
 
 const getPopupContainer = (HTMLElement) => HTMLElement;
 
-const HeaderDom = ({ userInfo, userOut }) => {
+const LayoutHeader = ({ userInfo, clearStateUser, children }) => {
+  const logout = () => {
+    clearLocalDatas([USER_INFO, TOKEN, MENU]);
+    if (userInfo) {
+      setKey(true, USER_INFO, { ...userInfo, isLogin: false });
+    }
+    saveToken();
+    window.location.reload();
+    clearStateUser(userInfo);
+  };
   return (
     <Header className="header">
       <div className="logo">
         <img src={logo} alt="logo"></img>
         <span>react-ant-admin</span>
       </div>
-      <div className="right" placement="bottomCenter">
+      {children}
+      <div className="right">
         <Dropdown
+          placement="bottomCenter"
           getPopupContainer={getPopupContainer}
-          overlay={<RightMenu logout={() => userOut(userInfo)} />}
+          overlay={<RightMenu logout={logout} />}
         >
           <div>管理员：{userInfo.username}</div>
         </Dropdown>
@@ -52,4 +66,4 @@ const HeaderDom = ({ userInfo, userOut }) => {
     </Header>
   );
 };
-export default connect(mapStateToProps, mapDispatchToProps)(HeaderDom);
+export default connect(mapStateToProps, mapDispatchToProps)(LayoutHeader);

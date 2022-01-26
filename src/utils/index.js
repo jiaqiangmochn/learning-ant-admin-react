@@ -1,12 +1,16 @@
-import { getMenus, RouterBasename } from "@/common";
+import { getMenus } from "@/common";
 
+export const USER_INFO = "USER_INFO";
+export const TOKEN = "admin_token";
+export const MENU = "MENU";
+export const VISIBEL = "COMPONENTS_VISIBEL";
 // 获取默认页面
 async function getDefaultMenu() {
   let openKeys = [],
     selectKey = [],
     openedMenu = [];
-  const menuList = await getMenus();
-  menuList.some((list) => {
+  const res = await getMenus();
+  res.data.some((list) => {
     const child = list.children;
     if (child && child.length) {
       openKeys = [list.key];
@@ -25,12 +29,12 @@ async function getDefaultMenu() {
 }
 
 function getSessionUser() {
-  return getKey(false, "userInfo");
+  return getKey(false, USER_INFO);
 }
 
 function saveUser(info) {
-  setKey(true, "userInfo", info);
-  setKey(false, "userInfo", info);
+  setKey(true, USER_INFO, info);
+  setKey(false, USER_INFO, info);
 }
 
 function sleep(seconed) {
@@ -39,117 +43,102 @@ function sleep(seconed) {
   });
 }
 
-function clearSessionUser() {
-  rmKey(false, "userInfo");
-}
-
 function getLocalUser() {
-  return getKey(true, "userInfo");
-}
-
-// 获取当前url
-function getCurrentUrl() {
-  let path = window.location.pathname;
-  if (RouterBasename === "/") {
-    return path;
-  }
-  path = path.replace(RouterBasename, "");
-  return path;
+  return getKey(true, USER_INFO);
 }
 
 async function getMenuParentKey(key) {
-  let parentKey;
-  const menuList = await getMenus();
-  menuList.some((menu) => {
-    if (menu.key === key) {
-      parentKey = key;
-      return true;
-    }
-    if (Array.isArray(menu.children) && menu.children.length) {
-      return menu.children.some((child) => {
-        if (child.key === key) {
-          parentKey = child.parentKey;
-          return true;
-        }
-        return false;
-      });
-    }
-    return false;
-  });
-  return parentKey;
+  const keys = [];
+  const res = await getMenus();
+  const list = reduceMenuList(res.data);
+  const info = list.find((item) => item.key === key);
+  let parentKey = info?.parentKey;
+  if (parentKey) {
+    const data = await getMenuParentKey(parentKey);
+    keys.push(...data);
+    keys.push(parentKey);
+  }
+  return keys;
 }
 
-function filterMenuList(list, type) {
-  return list.filter((item) => {
-    if (item.children && Array.isArray(item.children) && item.children.length) {
-      item.children = filterMenuList(item.children, type);
+function reduceMenuList(list, path = "") {
+  const data = [];
+  list.forEach((i) => {
+    const { children, ...item } = i;
+    item.parentPath = path;
+    if (children) {
+      const childList = reduceMenuList(children, path + i.path);
+      data.push(...childList);
     }
-    if (item.type.includes(type)) {
-      return true;
-    }
-    return false;
+    data.push(item);
   });
-}
-
-function reduceMenuList(list) {
-  return list.reduce((a, c) => {
-    a.push(c);
-    if (c.children) {
-      a.push(...c.children);
-    }
-    return a;
-  }, []);
+  return data;
 }
 
 function getLocalMenu() {
-  return getKey(false, "menu");
+  return getKey(false, MENU);
 }
 
-function saveLocalMenu(list) {
-  setKey(false, "menu", list);
+function saveLocalMenu(menu) {
+  setKey(false, MENU, menu);
 }
 
 function saveToken(token) {
-  let str = token || "";
-  localStorage.setItem("token", str);
+  setKey(true, TOKEN, token);
 }
 
 function getToken() {
-  return localStorage.getItem("token");
+  return getKey(true, TOKEN);
 }
 
 function getKey(isLocal, key) {
-  let storeage = getStorage(isLocal);
-  let data = storeage.getItem(key) || "null";
-  return JSON.parse(data);
+  return JSON.parse(getStorage(isLocal).getItem(key) || "null");
 }
 function getStorage(isLocal) {
   return isLocal ? window.localStorage : window.sessionStorage;
 }
 function setKey(isLocal, key, data) {
-  let storeage = getStorage(isLocal);
-  storeage.setItem(key, JSON.stringify(data || null));
+  getStorage(isLocal).setItem(key, JSON.stringify(data || null));
 }
 
 function rmKey(isLocal, key) {
-  let storeage = getStorage(isLocal);
-  storeage.removeItem(key);
+  getStorage(isLocal).removeItem(key);
 }
 
 function stopPropagation(e) {
   e.stopPropagation();
 }
 
+function getLayoutMode() {
+  return getKey(true, "layout-mode");
+}
+function setLayoutMode(data) {
+  setKey(true, "layout-mode", data);
+}
+
+/**
+ * 删除的一组本地数据
+ * @param {Array} keys 删除的一组本地数据的键值
+ */
+function clearLocalDatas(keys) {
+  keys.forEach((key) => {
+    rmKey(true, key);
+    rmKey(false, key);
+  });
+}
+function getCompVisibel() {
+  return getKey(true, VISIBEL);
+}
+function setCompVisibel(val) {
+  return setKey(true, VISIBEL, val);
+}
 export {
   getDefaultMenu,
   getSessionUser,
-  clearSessionUser,
   saveUser,
   sleep,
   getLocalUser,
-  getCurrentUrl,
   getMenuParentKey,
-  filterMenuList,
   reduceMenuList,
   getLocalMenu,
   saveLocalMenu,
@@ -157,5 +146,11 @@ export {
   getToken,
   getKey,
   setKey,
+  rmKey,
   stopPropagation,
+  getLayoutMode,
+  setLayoutMode,
+  clearLocalDatas,
+  getCompVisibel,
+  setCompVisibel,
 };

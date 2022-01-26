@@ -1,8 +1,16 @@
 # react-ant-admin
+[![GitHub star](https://img.shields.io/github/stars/kongyijilafumi/react-ant-admin?label=GitHub%20Star)](https://github.com/kongyijilafumi/react-ant-admin)
+[![GitHub fork](https://img.shields.io/github/forks/kongyijilafumi/react-ant-admin?label=GitHub%20fork)](https://github.com/kongyijilafumi/react-ant-admin/network/members)
+[![Gitee star](https://gitee.com/kong_yiji_and_lavmi/react-ant-admin/badge/star.svg?theme=dark)](https://gitee.com/kong_yiji_and_lavmi/react-ant-admin/stargazers)
+[![Gitee fork](https://gitee.com/kong_yiji_and_lavmi/react-ant-admin/badge/fork.svg?theme=dark)](https://gitee.com/kong_yiji_and_lavmi/react-ant-admin/members)
+![](https://img.shields.io/github/license/kongyijilafumi/react-ant-admin)
+
 
 TypeScript 版[GitHub(国外地址)](https://github.com/kongyijilafumi/react-ant-admin-ts) |
 TypeScript 版[码云(国内镜像)](https://gitee.com/kong_yiji_and_lavmi/react-ant-admin-ts)
 
+JavaScript 版[GitHub(国外地址)](https://github.com/kongyijilafumi/react-ant-admin) |
+JavaScript 版[码云(国内镜像)](https://gitee.com/kong_yiji_and_lavmi/react-ant-admin)
 
 此框架使用与二次开发，前端框架使用react，UI框架使用ant-design，全局数据状态管理使用redux，ajax使用库为axios。用于快速搭建中后台页面。欢迎各位提[issue](https://github.com/kongyijilafumi/react-ant-admin/issues)
 * [react](https://react.docschina.org/)
@@ -124,30 +132,35 @@ export const route = {
 import dayjs from "dayjs";
 let menu = [
    {
+    menu_id: 2,
     title: "详情页",
     path: "/details",
     key: "details",
     parentKey: "",
     icon: "icon_edit",
-    type: "1,0",
+    order: 1,
+    keepAlive: "true",
   },
   {
+    menu_id: 1,
     title: "个人中心",
     path: "/person",
     key: "detailsPerson",
     parentKey: "details",
     icon: "icon_infopersonal",
-    type: "0,1",
+    order: 1,
+    keepAlive: "true",
   },
   // .... 开始添加菜单信息 ....
   {
+    menu_id: 9, // 菜单id 用于关联权限
     title: "test", // 标题
     path: "/test",// 访问路径
     key: "test", // 唯一key
     parentKey: "",// 空表示 为主菜单而非子菜单
     icon: "icon_infopersonal",// 菜单图标
-    type: "0,1", // 访问权限,自定义,当前项目 0为管理员,1为普通用户.原始数据为字符串形式,会中途进行转化为数组形式["0","1"]
     order:1,// 菜单排序 越小越靠前
+    keepAlive: "true", //  页面保持状态
   }
   // .....
 ]
@@ -160,6 +173,39 @@ let menu = [
 
 
 
+## 脚本启动
+
+在完成依赖安装之后,有以下几种启动方式。
+- npm run start
+
+请求接口数据，通过后台返回数据显示项目信息
+
+- npm run "start color"
+
+请求接口数据，通过后台返回数据显示项目信息，并且开启主题色配置。
+
+- npm run "start mock"
+
+本地模拟数据，假数据来显示项目信息
+
+- npm run "start mock color"
+
+本地模拟数据，假数据来显示项目信息，并且开启主题色配置。
+
+- npm run build
+
+普通打包模式。
+
+- npm run "build color"
+
+打包主题色。项目体积会有所增加。
+
+### vscode快速启动项目
+
+使用[vscode编辑器](https://code.visualstudio.com/)[下载地址](https://blog.csdn.net/bielaiwuyang1999/article/details/117814237)
+
+把此项目文件夹拖入`vscode编辑器`,找到左下角`npm 脚本栏目`选择快速启动，免命令。
+![免命令示例图](https://gitee.com/kong_yiji_and_lavmi/my-image/raw/master/run.png)
 
 ## 项目截图
 

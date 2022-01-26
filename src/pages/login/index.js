@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { Form, Input, Button, Checkbox, message } from "antd";
 import { connect } from "react-redux";
 import MyIcon from "@/components/icon";
-import { saveUser, getLocalUser, saveToken } from "@/utils";
+import { saveUser, getLocalUser } from "@/utils";
 import { setUserInfoAction } from "@/store/user/action";
-import { login } from "@/api";
+// import { login } from "@/api";
 import "./index.less";
 
 const mapDispatchToProps = (dispatch) => ({
@@ -27,23 +27,32 @@ const IPT_RULE_PASSWORD = [
 function useLogin(setUserInfo) {
   const [btnLoad, setBtnLoad] = useState(false);
   const onFinish = (values) => {
+    const data = {
+      account: "admin",
+      type_id: 1,
+      user_id: 1,
+      username: "张同学",
+    };
+    saveUser(data);
+    message.success("登录成功");
+    setUserInfo(data);
     setBtnLoad(true);
-    login(values)
-      .then((res) => {
-        const { data, msg, status, token } = res;
-        setBtnLoad(false);
-        if (status === 1) return;
-        saveToken(token);
-        data.isLogin = true;
-        message.success(msg);
-        if (values.remember) {
-          saveUser(data);
-        }
-        setUserInfo(data);
-      })
-      .catch(() => {
-        setBtnLoad(false);
-      });
+    // login(values)
+    //   .then((res) => {
+    //     const { data, msg, status, token } = res;
+    //     setBtnLoad(false);
+    //     if (status === 1) return;
+    //     saveToken(token);
+    //     data.isLogin = true;
+    //     message.success(msg);
+    //     if (values.remember) {
+    //       saveUser(data);
+    //     }
+    //     setUserInfo(data);
+    //   })
+    //   .catch(() => {
+    //     setBtnLoad(false);
+    //   });
   };
   return { btnLoad, onFinish };
 }

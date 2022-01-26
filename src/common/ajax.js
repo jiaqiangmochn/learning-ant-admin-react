@@ -1,11 +1,13 @@
 import axios from "axios";
 import { message, notification } from "antd";
-import { getToken } from "@/utils";
+import { getToken, clearLocalDatas, USER_INFO, TOKEN, MENU } from "@/utils";
+import qs from "qs";
 // 请求地址
-const BASE_URL =
-  process.env.NODE_ENV === "development"
-    ? "http://127.0.0.1:8081/api/react-ant-admin"
-    : "/api/react-ant-admin";
+// const BASE_URL =
+//   process.env.NODE_ENV === "development"
+//     ? "http://127.0.0.1:8081/api/react-ant-admin"
+//     : "/api/react-ant-admin";
+const BASE_URL = "/";
 
 // 错误信息
 const codeMessage = {
@@ -30,7 +32,7 @@ const codeMessage = {
 const config = {
   // `baseURL` 将自动加在 `url` 前面，除非 `url` 是一个绝对 URL。
   // 它可以通过设置一个 `baseURL` 便于为 axios 实例的方法传递相对 URL
-  baseURL: BASE_URL,
+  baseURL: process.env.REACT_APP_API ? process.env.REACT_APP_API : BASE_URL,
 
   timeout: 1000 * 15,
 
@@ -73,7 +75,7 @@ instance.interceptors.response.use(
     return response && response.data;
   },
   function (error) {
-    const { response } = error;
+    const { response, message } = error;
     if (response && response.status) {
       const errorText = codeMessage[response.status] || response.statusText;
       const { status, config } = response;
@@ -82,20 +84,29 @@ instance.interceptors.response.use(
         description: errorText,
       });
       if (response.status === 401 || response.status === 403) {
-        sessionStorage.clear();
-        localStorage.clear();
+        clearLocalDatas([USER_INFO, TOKEN, MENU]);
         setTimeout(() => {
           window.location.reload();
         }, 1000);
       }
     } else if (!response) {
+      let description =
+        message === "Network Error"
+          ? "网络错误，请检查客户端是否存在网络故障或服务端无法响应"
+          : "客户端出现错误";
+      clearLocalDatas(["token"]);
       notification.error({
-        description: "您的网络发生异常，无法连接服务器",
-        message: "网络异常",
+        description,
+        message: "状态异常",
       });
     }
     // 对响应错误做点什么
     return Promise.reject(error);
   }
 );
+const rewirteGet = instance.get;
+instance.get = function (url, data) {
+  let query = qs.stringify(data, { addQueryPrefix: true });
+  return rewirteGet(url + query);
+};
 export default instance;
